@@ -1,7 +1,18 @@
-function createTask(title, completed) {
+var readline = require('readline')
+
+var options = 'show all, show active, show completed';
+
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+})
+
+
+//Defining our functions
+function createTask(description) { // no need for completed in parameter, we want to set the value to default as false
     var task = {
-        title: title,
-        completed: completed
+        description: description,
+        completed: false
     }
     return task;
 }
@@ -12,58 +23,67 @@ function forEachElem(arr, callback) {
     }
 }
 
-
-
-
-var tasks = [];
-
-tasks.push(createTask("buy milk", false));
-tasks.push(createTask("walk dog", true));
-
-console.log('Task List:')
-
-
-var input = 'add walk cat';
-var inputArr = input.split(' ');
-var description = inputArr.slice(1).join(' ');
-tasks.push(createTask(description, false));
-
-
-
-
-forEachElem(tasks, function (task, index) {
-    console.log((index + 1) + '. ' + task.title + '. Completed: ' + task.completed)
-});
-
-
-
-function toggle(index) {
-    if (!tasks.length) {
-        console.log('There are no tasks to toggle.')
-    } else if (tasks[index - 1].completed) {
-        tasks[index - 1].completed = false
-    } else if (!tasks[index - 1].completed) {
-        tasks[index - 1].completed = true
-    }
-    return tasks
+function showAll(arr) {
+    forEachElem(arr, logIt);
 }
 
+function showCompleted(task, i) {
+    if (task.completed) {
+        logIt(task, i)
+    }
+}
 
-// var input = 'toggle 0'
-// var inputArr = input.split(' ')
+function showActive(task, i) {
+    if (!task.completed) {
+        logIt(task, i);
+    }
+}
 
-// if (inputArr[0] === 'toggle') {
-//     var index = Number(inputArr[1])
-//     if (tasks[index] === undefined){
-//       console.log('an element at that index does not exist')
-//     } else {
-//       toggleCompleted(index)
-//     }
-//   }
+function toggle(i) {
+    if (tasks[i].completed) {
+        tasks[i].completed = false;
+    } else {
+        tasks[i].completed = true;
+    }
+}
+
+function logIt(task, i) {
+    console.log(i + '. ' + task.description + '. Completed: ' + task.completed)
+}
+
+function clear() {
+    process.stdout.write('\u001B[2J\u001B[0;0f')
+}
+
+//Our variables
+var tasks = [];
 
 
+//Our input handling with our read line
+rl.on('line', function (input) {
+    clear()
 
-// console.log('-----------')
+    var inputArr = input.split(' ');
+    var command = inputArr[0];
+    var description = inputArr.slice(1).join(' ');
 
-// console.log(tasks)
+    if (command === 'add') {
+        tasks.push(createTask(description))
 
+    } else if (command === 'show') {
+        if (description === 'all') {
+            showAll(tasks);
+        } else if (description === 'active') {
+            forEachElem(tasks, showActive);
+        } else if (description === 'completed') {
+            forEachElem(tasks, showCompleted)
+        }
+    } else if (command === 'toggle') {
+        toggle(description)
+    }
+
+    console.log('Please type a command:')
+    console.log('Please choose one: [' + options + '] $')
+})
+console.log('Please type a command:')
+console.log('Please choose one: [' + options + ']')
